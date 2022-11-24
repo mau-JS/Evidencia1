@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 global posi
+vec = []
 class CarAgent1(mesa.Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
@@ -27,12 +28,12 @@ class CarModel(mesa.Model):
         self.grid = mesa.space.MultiGrid(width,height,True)
         self.schedule = mesa.time.BaseScheduler(self)
         self.running = True
-        """for i in range(self.numAgentsCar):
+        for i in range(self.numAgentsCar):
             a = CarAgent1(i,self)
             self.schedule.add(a)
-            x = posi[0]
-            y = posi[1]
-            self.grid.place_agent(a,(x,y))"""
+            x = vec[i][0]
+            y = vec[i][1]
+            self.grid.place_agent(a,(x,y))
     def step(self):
         self.schedule.step()
 
@@ -66,7 +67,7 @@ width = 30
 height = 30
 
 # Set the number of agents here:
-#flock = []
+flock = []
 
 app = Flask("Boids example")
 
@@ -81,11 +82,14 @@ def boidsPosition():
 @app.route('/init', methods=['POST', 'GET'])
 def boidsInit():
     global flock
+    global vec
     if request.method == 'GET':
         #Recibiendo x,y como *np.random.rand, esto ingresa coordenadas aleatorias de posición inicial
         #np.random.rand(2) genera vectores en 2D con valores aleatorias entre [0,1), luego esto se multiplica por 30
-        posi = random.sample(range(0, 30), 2)
-        flock = [Boid(*posi, width, height, id) for id in range(5)] #En in range viene el número de agentes, en este caso son 5 agentes
+        for i in range (5):
+            vec.append(random.sample(range(0, 30), 2))
+        flock = [Boid(*vec[i], width, height, id) for id in range(5)] #En in range viene el número de agentes, en este caso son 5 agentes
+        car_model = CarModel(5,30,30)
         return jsonify({"num_agents":5, "w": 30, "h": 30}) #Enviando como JSON el número de agentes y tamaño del tablero
     elif request.method == 'POST':
         return "Post request from init\n"
